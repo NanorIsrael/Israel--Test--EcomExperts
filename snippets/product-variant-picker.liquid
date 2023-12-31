@@ -180,14 +180,15 @@
     const buttonContainer = document.getElementById('buttonContainer');
     const selectedSize = document.querySelector('.select__select');
     const productFormButtons = document.querySelector('.product-form__submit');
+    const buynowButton = document.querySelector('.shopify-payment-button__button');
     
     dropdown.hidden = true;
     dropdown.value = "Black";
-    dropdown.dispatchEvent(new Event('change', { bubbles: true }));
     
     selectedSize.value = "Unselected";
     if (selectedSize.value === "Unselected") {
       productFormButtons.disabled = true;
+      buynowButton.disabled = true;
     }
 
     function updateButtons() {
@@ -207,7 +208,11 @@
       
         button.appendChild(variantImg);
         button.value = option.value;
+
         button.style.backgroundColor = "white";
+        if (option.value === "Black") {
+          button.style.backgroundColor = "black";
+        }
         button.classList.add("swatch_btn");
 
         button.addEventListener('click', function () {
