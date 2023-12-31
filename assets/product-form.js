@@ -39,64 +39,189 @@ if (!customElements.get('product-form')) {
           formData.append('sections_url', window.location.pathname);
           this.cart.setActiveElement(document.activeElement);
         }
-        config.body = formData;
+      
+        config.body = formData
+        
+        const variantId = formData.get('id');
 
-        fetch(`${routes.cart_add_url}`, config)
-          .then((response) => response.json())
-          .then((response) => {
-            if (response.status) {
-              publish(PUB_SUB_EVENTS.cartError, {
-                source: 'product-form',
-                productVariantId: formData.get('id'),
-                errors: response.errors || response.description,
-                message: response.message,
-              });
-              this.handleErrorMessage(response.description);
+        if (variantId === '42726084870328') {
+          const jacketformData = new FormData() ;
+          for (const [key, val] of formData.entries()) {
+            jacketformData.append(key, val);
+          }
 
-              const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
-              if (!soldOutMessage) return;
-              this.submitButton.setAttribute('aria-disabled', true);
-              this.submitButton.querySelector('span').classList.add('hidden');
-              soldOutMessage.classList.remove('hidden');
-              this.error = true;
-              return;
-            } else if (!this.cart) {
-              window.location = window.routes.cart_url;
-              return;
-            }
+          jacketformData.set('id', '42701727170744')
+          jacketformData.set('product-id', '7395421028536')
+          
+          config.body = jacketformData;
 
-            if (!this.error)
-              publish(PUB_SUB_EVENTS.cartUpdate, {
-                source: 'product-form',
-                productVariantId: formData.get('id'),
-                cartData: response,
-              });
-            this.error = false;
-            const quickAddModal = this.closest('quick-add-modal');
-            if (quickAddModal) {
-              document.body.addEventListener(
-                'modalClosed',
-                () => {
-                  setTimeout(() => {
+          fetch(`${routes.cart_add_url}`, config)
+            .then((response) => response.json())
+            .then((response) => {
+              if (response.status) {
+                publish(PUB_SUB_EVENTS.cartError, {
+                  source: 'product-form',
+                  productVariantId: jacketformData.get('id'),
+                  errors: response.errors || response.description,
+                  message: response.message,
+                });
+                this.handleErrorMessage(response.description);
+
+                const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
+                if (!soldOutMessage) return;
+                this.submitButton.setAttribute('aria-disabled', true);
+                this.submitButton.querySelector('span').classList.add('hidden');
+                soldOutMessage.classList.remove('hidden');
+                this.error = true;
+                return;
+              } else if (!this.cart) {
+                window.location = window.routes.cart_url;
+                return;
+              }
+
+              if (!this.error)
+                publish(PUB_SUB_EVENTS.cartUpdate, {
+                  source: 'product-form',
+                  productVariantId: jacketformData.get('id'),
+                  cartData: response,
+                });
+              this.error = false;
+              const quickAddModal = this.closest('quick-add-modal');
+              if (quickAddModal) {
+                document.body.addEventListener(
+                  'modalClosed',
+                  () => {
+                    setTimeout(() => {
+                      this.cart.renderContents(response);
+                    });
+                  },
+                  { once: true }
+                );
+                quickAddModal.hide(true);
+              } else {
+                this.cart.renderContents(response);
+              }
+            })
+            .catch((e) => {
+              console.error(e);
+            })
+            .finally(() => {
+              config.body = formData
+              fetch(`${routes.cart_add_url}`, config)
+                .then((response) => response.json())
+                .then((response) => {
+                  if (response.status) {
+                    publish(PUB_SUB_EVENTS.cartError, {
+                      source: 'product-form',
+                      productVariantId: formData.get('id'),
+                      errors: response.errors || response.description,
+                      message: response.message,
+                    });
+                    this.handleErrorMessage(response.description);
+      
+                    const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
+                    if (!soldOutMessage) return;
+                    this.submitButton.setAttribute('aria-disabled', true);
+                    this.submitButton.querySelector('span').classList.add('hidden');
+                    soldOutMessage.classList.remove('hidden');
+                    this.error = true;
+                    return;
+                  } else if (!this.cart) {
+                    window.location = window.routes.cart_url;
+                    return;
+                  }
+      
+                  if (!this.error)
+                    publish(PUB_SUB_EVENTS.cartUpdate, {
+                      source: 'product-form',
+                      productVariantId: formData.get('id'),
+                      cartData: response,
+                    });
+                  this.error = false;
+                  const quickAddModal = this.closest('quick-add-modal');
+                  if (quickAddModal) {
+                    document.body.addEventListener(
+                      'modalClosed',
+                      () => {
+                        setTimeout(() => {
+                          this.cart.renderContents(response);
+                        });
+                      },
+                      { once: true }
+                    );
+                    quickAddModal.hide(true);
+                  } else {
                     this.cart.renderContents(response);
-                  });
-                },
-                { once: true }
-              );
-              quickAddModal.hide(true);
-            } else {
-              this.cart.renderContents(response);
-            }
-          })
-          .catch((e) => {
-            console.error(e);
-          })
-          .finally(() => {
-            this.submitButton.classList.remove('loading');
-            if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
-            if (!this.error) this.submitButton.removeAttribute('aria-disabled');
-            this.querySelector('.loading__spinner').classList.add('hidden');
-          });
+                  }
+                })
+                .catch((e) => {
+                  console.error(e);
+                })
+
+              this.submitButton.classList.remove('loading');
+              if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
+              if (!this.error) this.submitButton.removeAttribute('aria-disabled');
+              this.querySelector('.loading__spinner').classList.add('hidden');
+            });
+
+        } else {
+          fetch(`${routes.cart_add_url}`, config)
+            .then((response) => response.json())
+            .then((response) => {
+              if (response.status) {
+                publish(PUB_SUB_EVENTS.cartError, {
+                  source: 'product-form',
+                  productVariantId: formData.get('id'),
+                  errors: response.errors || response.description,
+                  message: response.message,
+                });
+                this.handleErrorMessage(response.description);
+  
+                const soldOutMessage = this.submitButton.querySelector('.sold-out-message');
+                if (!soldOutMessage) return;
+                this.submitButton.setAttribute('aria-disabled', true);
+                this.submitButton.querySelector('span').classList.add('hidden');
+                soldOutMessage.classList.remove('hidden');
+                this.error = true;
+                return;
+              } else if (!this.cart) {
+                window.location = window.routes.cart_url;
+                return;
+              }
+  
+              if (!this.error)
+                publish(PUB_SUB_EVENTS.cartUpdate, {
+                  source: 'product-form',
+                  productVariantId: formData.get('id'),
+                  cartData: response,
+                });
+              this.error = false;
+              const quickAddModal = this.closest('quick-add-modal');
+              if (quickAddModal) {
+                document.body.addEventListener(
+                  'modalClosed',
+                  () => {
+                    setTimeout(() => {
+                      this.cart.renderContents(response);
+                    });
+                  },
+                  { once: true }
+                );
+                quickAddModal.hide(true);
+              } else {
+                this.cart.renderContents(response);
+              }
+            })
+            .catch((e) => {
+              console.error(e);
+            })
+            .finally(() => {
+              this.submitButton.classList.remove('loading');
+              if (this.cart && this.cart.classList.contains('is-empty')) this.cart.classList.remove('is-empty');
+              if (!this.error) this.submitButton.removeAttribute('aria-disabled');
+              this.querySelector('.loading__spinner').classList.add('hidden');
+            })
+        }
       }
 
       handleErrorMessage(errorMessage = false) {
