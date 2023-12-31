@@ -1,3 +1,6 @@
+
+
+
 {% comment %}
   Renders product variant-picker
 
@@ -32,6 +35,7 @@
       </script>
     </variant-radios>
   {%- else -%}
+  
     <variant-selects
       id="variant-selects-{{ section.id }}"
       class="no-js-hidden"
@@ -47,17 +51,49 @@
           <label class="form__label" for="Option-{{ section.id }}-{{ forloop.index0 }}">
             {{ option.name }}
           </label>
-          <div class="select">
-            <select
-              id="Option-{{ section.id }}-{{ forloop.index0 }}"
-              class="select__select"
-              name="options[{{ option.name | escape }}]"
-              form="{{ product_form_id }}"
-            >
-              {% render 'product-variant-options', product: product, option: option, block: block %}
-            </select>
-            {% render 'icon-caret' %}
+         
+          <div class="button-container" id="buttonContainer">
+            <!-- Dropdown converted to buttons will be appended here -->
           </div>
+         
+                {% if option.name == "Color" %}
+                  <select
+                    id="Option-{{ section.id }}-{{ forloop.index0 }}"
+                    class="color_swatches"
+                    name="options[{{ option.name | escape }}]"
+                    form="{{ product_form_id }}"
+                  >
+                  {% for value in option.values %}
+  
+                    <option
+                      value="{{ value | escape }}"
+                      {% if option.selected_value == value %}
+                        selected="selected"
+                      {% endif %}
+                    >
+                      {% if option_disabled -%}
+                        {{- 'products.product.value_unavailable' | t: option_value: value -}}
+                      {%- else -%}
+                        {{- value -}}
+                      {%- endif %}
+                    </option>
+                
+                  {% endfor %}
+                </select>
+                {% else %}
+                  <div class="select">
+                      <select
+                          id="Option-{{ section.id }}-{{ forloop.index0 }}"
+                          class="select__select"
+                          name="options[{{ option.name | escape }}]"
+                          form="{{ product_form_id }}"
+                        >
+                        {% render 'product-variant-options', product: product, option: option, block: block %}
+                        
+                      </select>
+                      {% render 'icon-caret' %}
+                  </div>
+                {% endif %}
         </div>
       {%- endfor -%}
 
@@ -120,3 +156,76 @@
     </div>
   </div>
 </noscript>
+
+<style>
+  .button-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .button-container button {
+    display: inline-block;
+    margin: 5px; 
+    height: 80px;
+    width: 80px;
+    border-radius: 50%;
+    border: 1px solid #000;
+    cursor: pointer;
+  }  
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const dropdown = document.querySelector(".color_swatches");
+    const buttonContainer = document.getElementById('buttonContainer');
+    const selectedSize = document.querySelector('.select__select');
+    const productFormButtons = document.querySelector('.product-form__submit');
+    
+    dropdown.hidden = true;
+    dropdown.value = "Black";
+    dropdown.dispatchEvent(new Event('change', { bubbles: true }));
+    
+    selectedSize.value = "Unselected";
+    if (selectedSize.value === "Unselected") {
+      productFormButtons.disabled = true;
+    }
+
+    function updateButtons() {
+      // Clear existing buttons
+      buttonContainer.innerHTML = '';
+
+      // Create buttons from dropdown options
+      for (const option of dropdown.options) {
+        const button = document.createElement('button');
+        const variantImg = document.createElement('img');
+        
+        // Use the variant images data for the specific option value
+        variantImg.src = `//israel-nanor-test.myshopify.com/cdn/shop/files/${option.value}-Handbag.jpg?v=1703050576"`
+        variantImg.width = 50;
+        variantImg.height = 50;
+        variantImg.style.borderRadius = "50%";
+      
+        button.appendChild(variantImg);
+        button.value = option.value;
+        button.style.backgroundColor = "white";
+        button.classList.add("swatch_btn");
+
+        button.addEventListener('click', function () {
+          const btnrow = document.querySelectorAll('.swatch_btn')
+          btnrow.forEach(btn => {
+            btn.style.backgroundColor = "white";
+          });
+
+          button.style.backgroundColor = "black";
+          dropdown.value = option.value;
+          dropdown.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+
+        // Append button to the container
+        buttonContainer.appendChild(button);
+      }
+    }
+
+    updateButtons();
+  });
+</script>

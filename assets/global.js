@@ -1012,6 +1012,18 @@ class VariantSelects extends HTMLElement {
   }
 
   updateVariantInput() {
+    const buynowBtn = document.querySelector(".shopify-payment-button__button")
+    const addToCartBtn = document.querySelector(".product-form__submit")
+    const sizeVariant = document.querySelector(".select__select")
+
+    if (sizeVariant.value === "Unselected") {
+      buynowBtn.disabled = true;
+      addToCartBtn.disabled = true;
+    } else {
+      buynowBtn.disabled = false;
+      addToCartBtn.disabled = false;
+    }
+
     const productForms = document.querySelectorAll(
       `#product-form-${this.dataset.section}, #product-form-installment-${this.dataset.section}`
     );

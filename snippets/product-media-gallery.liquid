@@ -102,6 +102,7 @@
                 assign lazy_load = true
               endif
             -%}
+            {% if media contains "files/" %}
             {% render 'product-thumbnail',
               media: media,
               media_count: media_count,
@@ -116,6 +117,7 @@
               constrain_to_viewport: section.settings.constrain_to_viewport,
               lazy_load: lazy_load
             %}
+          {% endif %}
           </li>
         {%- endunless -%}
       {%- endfor -%}
