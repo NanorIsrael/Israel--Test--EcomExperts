@@ -119,6 +119,15 @@ class CartItems extends HTMLElement {
       })
       .then((state) => {
         const parsedState = JSON.parse(state);
+
+        if (parsedState.items_removed.length > 0) {
+          const item = parsedState.items_removed[0];
+
+          if (`${item.variant_id}` === "42726084870328") {
+                this.updateQuantity(line, 0)
+          }
+        } 
+
         const quantityElement =
           document.getElementById(`Quantity-${line}`) || document.getElementById(`Drawer-quantity-${line}`);
         const items = document.querySelectorAll('.cart-item');
