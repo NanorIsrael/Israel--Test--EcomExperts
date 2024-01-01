@@ -27,6 +27,7 @@ class PredictiveSearch extends SearchForm {
   onChange() {
     super.onChange();
     const newSearchTerm = this.getQuery();
+    
     if (!this.searchTerm || !newSearchTerm.startsWith(this.searchTerm)) {
       // Remove the results when they are no longer relevant for the new search term
       // so they don't show up when the dropdown opens again
@@ -170,7 +171,7 @@ class PredictiveSearch extends SearchForm {
   getSearchResults(searchTerm) {
     const queryKey = searchTerm.replace(' ', '-').toLowerCase();
     this.setLiveRegionLoadingState();
-
+  
     if (this.cachedResults[queryKey]) {
       this.renderSearchResults(this.cachedResults[queryKey]);
       return;
@@ -185,19 +186,23 @@ class PredictiveSearch extends SearchForm {
           this.close();
           throw error;
         }
-
         return response.text();
       })
       .then((text) => {
         const resultsMarkup = new DOMParser()
           .parseFromString(text, 'text/html')
           .querySelector('#shopify-section-predictive-search').innerHTML;
+        
+        // Filter out results that contain "soft winter jacket"
+        const filteredResultsMarkup = this.filterResults(resultsMarkup);
+        
         // Save bandwidth keeping the cache in all instances synced
         this.allPredictiveSearchInstances.forEach((predictiveSearchInstance) => {
-          predictiveSearchInstance.cachedResults[queryKey] = resultsMarkup;
+          predictiveSearchInstance.cachedResults[queryKey] = filteredResultsMarkup;
         });
-        this.renderSearchResults(resultsMarkup);
-      })
+
+          this.renderSearchResults(filteredResultsMarkup);
+        })
       .catch((error) => {
         if (error?.code === 20) {
           // Code 20 means the call was aborted
@@ -226,11 +231,11 @@ class PredictiveSearch extends SearchForm {
   }
 
   renderSearchResults(resultsMarkup) {
-    this.predictiveSearchResults.innerHTML = resultsMarkup;
-    this.setAttribute('results', true);
-
-    this.setLiveRegionResults();
-    this.open();
+      this.predictiveSearchResults.innerHTML = resultsMarkup;
+      this.setAttribute('results', true);
+  
+      this.setLiveRegionResults();
+      this.open();
   }
 
   setLiveRegionResults() {
@@ -272,6 +277,25 @@ class PredictiveSearch extends SearchForm {
     this.resultsMaxHeight = false;
     this.predictiveSearchResults.removeAttribute('style');
   }
+
+  filterResults(resultsMarkup) {
+    const container = document.createElement('div');
+    container.innerHTML = resultsMarkup;
+  
+    const itemsToRemove = container.querySelectorAll('.predictive-search__item-heading');
+  
+    itemsToRemove.forEach((item) => {
+      if (item.textContent.toLowerCase().includes("soft winter jacket")) {
+        const listItem = item.closest('.predictive-search__list-item');
+        if (listItem) {
+          listItem.remove();
+        }
+      }
+    });
+  
+    return container.innerHTML;
+  }
+  
 }
 
 customElements.define('predictive-search', PredictiveSearch);
